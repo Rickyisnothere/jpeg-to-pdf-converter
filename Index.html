@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JPEG to PDF Converter</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74EBD5, #ACB6E5);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        h1 {
+            font-size: 28px;
+            color: #444;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: #74EBD5;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        a {
+            text-decoration: none;
+            color: #fff;
+            background: #007BFF;
+            padding: 10px 25px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        a:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>JPEG to PDF Converter</h1>
+    <input type="file" id="fileInput" accept="image/jpeg" multiple>
+    <button onclick="convertToPDF()">Convert to PDF</button>
+    <div id="output"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+    async function convertToPDF() {
+        const { jsPDF } = window.jspdf;
+        const files = document.getElementById('fileInput').files;
+
+        if (!files.length) {
+            alert('Please select at least one JPEG image.');
+            return;
+        }
+
+        const pdf = new jsPDF();
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            await new Promise((resolve) => {
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const width = pdf.internal.pageSize.getWidth();
+                        const height = (img.height * width) / img.width;
+
+                        if (i > 0) pdf.addPage();
+                        pdf.addImage(img, 'JPEG', 0, 0, width, height);
+                        resolve();
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = `<a href="${pdf.output('bloburl')}" download="converted.pdf">Download PDF</a>`;
+    }
+</script>
+
+</body>
+</html>
